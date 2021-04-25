@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="P_6Stack" Id="{20ac5aef-e629-4ad3-b29a-76974f20f0ec}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM P_6Stack
+VAR
+	nState: INT;
+	
+	//Timers
+	fbTimerMovingLoad: TON;
+	fbTimerLift: TON;
+	fbTimerToSpace: TON;
+	fbTimerPlace: TON;
+	fbTimerCounter: TON;
+	fbTimerHoming: TON;
+	
+	
+	AtLoadTrig:R_TRIG;		
+
+	//INT
+	nCounter         : INT := 0;
+END_VAR
+
+VAR CONSTANT
+	//Here we define our constant where we want the different positon to be. This is instead of making steps you can call this fixed steps.
+	Start		:INT:=00;
+	AtLoad		:INT:=01;
+	PickUP 		:INT := 02;
+	LiftPallet         : INT := 03;
+	RetractForksLeft   : INT := 04;
+	MovingToSpace      : INT := 05;
+	DeliverPart        : INT := 06;
+	PlacePallet        : INT := 07;
+	RetractRight       : INT := 08;
+	Homing             : INT := 09;
+	Retry   		   : INT := 10;
+	Moving     : INT := 20;
+	MovingStop : INT := 22;
+	GetPart            : INT := 50;
+	GetPartPick        : INT := 51;
+	PartPickUp    	   : INT := 52;
+	PickUpPart         : INT := 53;
+	PartPicked 		   : INT := 54;
+	MoveToUnload       : INT := 55;
+	UnloadPart 		   : INT := 56;
+	PlacePart          : INT := 57;
+	Waiting    : INT := 30;	
+	Stopping   : INT := 40;
+	Resetting  : INT := 60;
+	Estop      : INT := 9999;		
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// This is our sixth program the stacker robot will pick up the pallet at load and stack them into the different shelf from 1 to 54. 
+
+
+AtLoadTrig(CLK:=FIO.bScAtLoad);
+
+
+CASE nState OF
+		Start: //Entry of the Palled 
+			IF FIO.bScAtLoad=FALSE AND FIO.bScConv3=TRUE THEN
+				FIO.bScLoadingConv:=TRUE;                       //turning on the load conveyor
+			END_IF
+				FIO.iSC_TargetPos := 21474; //This is the value that sends the crane home.
+			
+			IF AtLoadTrig.Q THEN // counter for the stack robot to know which shelf to put the palled in shelf no = anount of pallet that have been at entry.
+			nCounter:=nCounter+1;
+			END_IF
+			IF FIO.bScAtLoad=TRUE THEN
+				nState := AtLoad;
+			END_IF
+		
+		AtLoad:	 // Pallet is at load, the different conveyor will go false when pallet is at load.
+		IF FIO.bScAtLoad=TRUE THEN 
+			FIO.bScLoadingConv:=FALSE;
+			fbTimerMovingLoad(IN:=TRUE,PT:=T#1S);
+			IF fbTimerMovingLoad.Q THEN
+				fbTimerMovingLoad(IN:=FALSE);
+				FIO.bScConv3:=FALSE;
+				nState := PickUP;
+		 	END_IF						
+		END_IF	
+
+	PickUP:  // here we make sure that the the stack robot are at home and there pallet at the load and moving x and z are false before it cna pick up a pallet.
+		IF FIO.bScAtLoad=TRUE AND FIO.iSC_TargetPos = 21474 AND FIO.bSC_MovingX=FALSE and FIO.bSC_MovingZ=FALSE THEN
+			FIO.bSc_Left := TRUE;
+			nState := LiftPallet;
+		END_IF
+	
+	LiftPallet:	 // there the pallet gets picked up	
+		IF FIO.bSc_AtLeft=TRUE THEN
+			FIO.bSc_Lift:=TRUE;
+			fbTimerLift(IN:=TRUE,PT:=T#1S);	
+			IF fbTimerLift.Q THEN
+				fbTimerLift(IN:=FALSE);
+				FIO.bSc_Left :=FALSE; 
+				nState := RetractForksLeft;
+			END_IF	
+		END_IF
+	
+	RetractForksLeft:  // here er made an extra step to give time for the fock to come back before we move to the next state
+			nState:= MovingToSpace;
+			
+	MovingToSpace:	// here we make sure that the pallet are at mid before the stack robot moves again and we cound which palle 
+		IF 	FIO.bSC_AtMiddle=TRUE THEN
+			FIO.iSC_TargetPos:=nCounter;    //here we set the pallet count = the target pos which is the space in the shelf
+			fbTimerToSpace(IN:=TRUE,PT:=T#2S);	
+			IF fbTimerToSpace.Q THEN
+				fbTimerToSpace(IN:=FALSE);
+				nState := DeliverPart;
+			END_IF
+		END_IF
+
+	DeliverPart: // here we put pallet into shelf                             
+		IF FIO.bSC_MovingX=FALSE THEN
+		FIO.bSc_Right := TRUE;                    
+		nState := PlacePallet;
+		END_IF
+		
+	PlacePallet:   
+		IF FIO.bSc_AtRight=TRUE THEN
+			FIO.bSc_Lift:=FALSE;
+			fbTimerPlace(IN:=TRUE,PT:=T#1S);	
+			IF fbTimerPlace.Q THEN
+				fbTimerPlace(IN:=FALSE);
+				nState := RetractRight;
+			END_IF	
+		END_IF
+
+   		RetractRight:   //retract the arm     
+		    IF FIO.bSc_Lift=FALSE THEN
+				FIO.bSc_Right:=FALSE;
+			fbTimerHoming(IN:=TRUE,PT:=T#1S);	
+			IF fbTimerHoming.Q THEN
+				fbTimerHoming(IN:=FALSE);
+				nState := Homing; 		
+			END_IF				
+		END_IF
+
+	Homing:		//moving to homing
+		IF FIO.bSc_AtMiddle=TRUE THEN
+			FIO.iSc_TargetPos := 21474;
+			nState := Start;	
+		END_IF		
+		
+	ELSE
+
+	nState:=9999;		
+	
+END_CASE
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="P_6Stack">
+      <LineId Id="566" Count="1" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="614" Count="0" />
+      <LineId Id="198" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="382" Count="0" />
+      <LineId Id="380" Count="1" />
+      <LineId Id="615" Count="2" />
+      <LineId Id="379" Count="0" />
+      <LineId Id="409" Count="1" />
+      <LineId Id="519" Count="0" />
+      <LineId Id="411" Count="5" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="408" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="167" Count="1" />
+      <LineId Id="226" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="178" Count="0" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="218" Count="0" />
+      <LineId Id="221" Count="2" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="204" Count="0" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="240" Count="1" />
+      <LineId Id="243" Count="0" />
+      <LineId Id="227" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="250" Count="3" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="230" Count="0" />
+      <LineId Id="232" Count="0" />
+      <LineId Id="244" Count="0" />
+      <LineId Id="233" Count="0" />
+      <LineId Id="403" Count="0" />
+      <LineId Id="246" Count="1" />
+      <LineId Id="404" Count="0" />
+      <LineId Id="254" Count="2" />
+      <LineId Id="259" Count="2" />
+      <LineId Id="395" Count="0" />
+      <LineId Id="391" Count="0" />
+      <LineId Id="396" Count="0" />
+      <LineId Id="398" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="399" Count="1" />
+      <LineId Id="393" Count="1" />
+      <LineId Id="392" Count="0" />
+      <LineId Id="402" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="257" Count="0" />
+      <LineId Id="271" Count="0" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="265" Count="0" />
+      <LineId Id="276" Count="1" />
+      <LineId Id="272" Count="0" />
+      <LineId Id="279" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="81" Count="1" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="406" Count="0" />
+      <LineId Id="405" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

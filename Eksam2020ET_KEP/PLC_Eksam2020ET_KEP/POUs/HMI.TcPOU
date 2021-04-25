@@ -1,0 +1,860 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="HMI" Id="{9540a874-aaac-495e-9a57-2de8caf7cb1f}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM HMI
+VAR
+
+	SpaceOcc1: BOOL;
+	
+	nState: INT;
+	nLastState: INT;
+	
+	nCounter: INT;
+	EmitTrig:R_TRIG;
+
+	Lamp1_Blue: BOOL;
+	Lamp1_Green: BOOL;
+	Lamp1_Metal: BOOL;	
+	Lamp2_Blue: BOOL;
+	Lamp2_Green: BOOL;
+	Lamp2_Metal: BOOL;
+	Lamp3_Blue: BOOL;
+	Lamp3_Green: BOOL;
+	Lamp3_Metal: BOOL;
+	Lamp4_Blue: BOOL;
+	Lamp4_Green: BOOL;
+	Lamp4_Metal: BOOL;
+	Lamp5_Blue: BOOL;
+	Lamp5_Green: BOOL;
+	Lamp5_Metal: BOOL;
+	Lamp6_Blue: BOOL;
+	Lamp6_Green: BOOL;
+	Lamp6_Metal: BOOL;
+	Lamp7_Blue: BOOL;
+	Lamp7_Green: BOOL;
+	Lamp7_Metal: BOOL;	
+	Lamp8_Blue: BOOL;
+	Lamp8_Green: BOOL;
+	Lamp8_Metal: BOOL;
+	Lamp9_Blue: BOOL;
+	Lamp9_Green: BOOL;
+	Lamp9_Metal: BOOL;
+	Lamp10_Blue: BOOL;
+	Lamp10_Green: BOOL;
+	Lamp10_Metal: BOOL;
+	Lamp11_Blue: BOOL;
+	Lamp11_Green: BOOL;
+	Lamp11_Metal: BOOL;
+	Lamp12_Blue: BOOL;
+	Lamp12_Green: BOOL;
+	Lamp12_Metal: BOOL;
+	Lamp13_Blue: BOOL;
+	Lamp13_Green: BOOL;
+	Lamp13_Metal: BOOL;
+	Lamp14_Blue: BOOL;
+	Lamp14_Green: BOOL;
+	Lamp14_Metal: BOOL;
+	Lamp15_Blue: BOOL;
+	Lamp15_Green: BOOL;
+	Lamp15_Metal: BOOL;
+	Lamp16_Blue: BOOL;
+	Lamp16_Green: BOOL;
+	Lamp16_Metal: BOOL;
+	Lamp17_Blue: BOOL;
+	Lamp17_Green: BOOL;
+	Lamp17_Metal: BOOL;
+	Lamp18_Blue: BOOL;
+	Lamp18_Green: BOOL;
+	Lamp18_Metal: BOOL;
+	Lamp19_Blue: BOOL;
+	Lamp19_Green: BOOL;
+	Lamp19_Metal: BOOL;	
+	Lamp20_Blue: BOOL;
+	Lamp20_Green: BOOL;
+	Lamp20_Metal: BOOL;
+	Lamp21_Blue: BOOL;
+	Lamp21_Green: BOOL;
+	Lamp21_Metal: BOOL;
+	Lamp22_Blue: BOOL;
+	Lamp22_Green: BOOL;
+	Lamp22_Metal: BOOL;
+	Lamp23_Blue: BOOL;
+	Lamp23_Green: BOOL;
+	Lamp23_Metal: BOOL;
+	Lamp24_Blue: BOOL;
+	Lamp24_Green: BOOL;
+	Lamp24_Metal: BOOL;
+	Lamp25_Blue: BOOL;
+	Lamp25_Green: BOOL;
+	Lamp25_Metal: BOOL;
+	Lamp26_Blue: BOOL;
+	Lamp26_Green: BOOL;
+	Lamp26_Metal: BOOL;
+	Lamp27_Blue: BOOL;
+	Lamp27_Green: BOOL;
+	Lamp27_Metal: BOOL;
+	Lamp28_Blue: BOOL;
+	Lamp28_Green: BOOL;
+	Lamp28_Metal: BOOL;
+	Lamp29_Blue: BOOL;
+	Lamp29_Green: BOOL;
+	Lamp29_Metal: BOOL;	
+	Lamp30_Blue: BOOL;
+	Lamp30_Green: BOOL;
+	Lamp30_Metal: BOOL;
+	Lamp31_Blue: BOOL;
+	Lamp31_Green: BOOL;
+	Lamp31_Metal: BOOL;
+	Lamp32_Blue: BOOL;
+	Lamp32_Green: BOOL;
+	Lamp32_Metal: BOOL;
+	Lamp33_Blue: BOOL;
+	Lamp33_Green: BOOL;
+	Lamp33_Metal: BOOL;
+	Lamp34_Blue: BOOL;
+	Lamp34_Green: BOOL;
+	Lamp34_Metal: BOOL;
+	Lamp35_Blue: BOOL;
+	Lamp35_Green: BOOL;
+	Lamp35_Metal: BOOL;
+	Lamp36_Blue: BOOL;
+	Lamp36_Green: BOOL;
+	Lamp36_Metal: BOOL;
+	Lamp37_Blue: BOOL;
+	Lamp37_Green: BOOL;
+	Lamp37_Metal: BOOL;
+	Lamp38_Blue: BOOL;
+	Lamp38_Green: BOOL;
+	Lamp38_Metal: BOOL;
+	Lamp39_Blue: BOOL;
+	Lamp39_Green: BOOL;
+	Lamp39_Metal: BOOL;	
+	Lamp40_Blue: BOOL;
+	Lamp40_Green: BOOL;
+	Lamp40_Metal: BOOL;	
+	Lamp41_Blue: BOOL;
+	Lamp41_Green: BOOL;
+	Lamp41_Metal: BOOL;	
+	Lamp42_Blue: BOOL;
+	Lamp42_Green: BOOL;
+	Lamp42_Metal: BOOL;	
+	Lamp43_Blue: BOOL;
+	Lamp43_Green: BOOL;
+	Lamp43_Metal: BOOL;	
+	Lamp44_Blue: BOOL;
+	Lamp44_Green: BOOL;
+	Lamp44_Metal: BOOL;	
+	Lamp45_Blue: BOOL;
+	Lamp45_Green: BOOL;
+	Lamp45_Metal: BOOL;	
+	Lamp46_Blue: BOOL;
+	Lamp46_Green: BOOL;
+	Lamp46_Metal: BOOL;	
+	Lamp47_Blue: BOOL;
+	Lamp47_Green: BOOL;
+	Lamp47_Metal: BOOL;	
+	Lamp48_Blue: BOOL;
+	Lamp48_Green: BOOL;
+	Lamp48_Metal: BOOL;	
+	Lamp49_Blue: BOOL;
+	Lamp49_Green: BOOL;
+	Lamp49_Metal: BOOL;		
+	Lamp50_Blue: BOOL;
+	Lamp50_Green: BOOL;
+	Lamp50_Metal: BOOL;	
+	Lamp51_Blue: BOOL;
+	Lamp51_Green: BOOL;
+	Lamp51_Metal: BOOL;	
+	Lamp52_Blue: BOOL;
+	Lamp52_Green: BOOL;
+	Lamp52_Metal: BOOL;	
+	Lamp53_Blue: BOOL;
+	Lamp53_Green: BOOL;
+	Lamp53_Metal: BOOL;	
+	Lamp54_Blue: BOOL;
+	Lamp54_Green: BOOL;
+	Lamp54_Metal: BOOL;		
+
+
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// In this program we setup the link between the stacking shelf with the HMI,
+// it is here we set the lamps that will show what color box that are on the shelf
+// and what shelf number the boxes are on. 
+// It is also here we link the start and stop from HMI, and the auto status. 
+// We have not made so you can put the system in auto on the HMI, this is due to safty. 
+
+EmitTrig(CLK:=FIO.bPP_BaseSens);
+
+IF EmitTrig.Q THEN				// This is the counter that are linked with the HIM to se the shelf number the boxes go in.
+	nCounter:=nCounter+1;
+END_IF
+
+
+//---------------------------------------------------
+
+IF nCounter = 1 AND FIO.iInVision = 3 THEN   // Linking the self number with the color of the box  throw the vision sencor.
+        Lamp1_Blue := TRUE;
+END_IF	
+IF nCounter = 1 AND FIO.iInVision = 6 THEN  
+        Lamp1_Green := TRUE;
+END_IF		
+IF nCounter = 1 AND FIO.iInVision = 9 THEN
+        Lamp1_Metal := TRUE;
+END_IF		
+
+//---------------------------------------------------
+	
+IF nCounter = 2 AND FIO.iInVision = 3 THEN
+        Lamp2_Blue := TRUE;
+END_IF	
+IF nCounter = 2 AND FIO.iInVision = 6 THEN
+        Lamp2_Green := TRUE;
+END_IF		
+IF nCounter = 2 AND FIO.iInVision = 9 THEN
+        Lamp2_Metal := TRUE;
+END_IF	
+
+
+//---------------------------------------------------
+
+IF nCounter = 3 AND FIO.iInVision = 3 THEN
+        Lamp3_Blue := TRUE;
+END_IF	
+IF nCounter = 3 AND FIO.iInVision = 6 THEN
+        Lamp3_Green := TRUE;
+END_IF		
+IF nCounter = 3 AND FIO.iInVision = 9 THEN
+        Lamp3_Metal := TRUE;
+END_IF
+
+
+//---------------------------------------------------
+
+IF nCounter = 4 AND FIO.iInVision = 3 THEN
+        Lamp4_Blue := TRUE;
+END_IF	
+IF nCounter = 4 AND FIO.iInVision = 6 THEN
+        Lamp4_Green := TRUE;
+END_IF		
+IF nCounter = 4 AND FIO.iInVision = 9 THEN
+        Lamp4_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 5 AND FIO.iInVision = 3 THEN
+        Lamp5_Blue := TRUE;
+END_IF	
+IF nCounter = 5 AND FIO.iInVision = 6 THEN
+        Lamp5_Green := TRUE;
+END_IF		
+IF nCounter = 5 AND FIO.iInVision = 9 THEN
+        Lamp5_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 6 AND FIO.iInVision = 3 THEN
+        Lamp6_Blue := TRUE;
+END_IF	
+IF nCounter = 6 AND FIO.iInVision = 6 THEN
+        Lamp6_Green := TRUE;
+END_IF		
+IF nCounter = 6 AND FIO.iInVision = 9 THEN
+        Lamp6_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 7 AND FIO.iInVision = 3 THEN
+        Lamp7_Blue := TRUE;
+END_IF	
+IF nCounter = 7 AND FIO.iInVision = 6 THEN
+        Lamp7_Green := TRUE;
+END_IF		
+IF nCounter = 7 AND FIO.iInVision = 9 THEN
+        Lamp7_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 8 AND FIO.iInVision = 3 THEN
+        Lamp8_Blue := TRUE;
+END_IF	
+IF nCounter = 8 AND FIO.iInVision = 6 THEN
+        Lamp8_Green := TRUE;
+END_IF		
+IF nCounter = 8 AND FIO.iInVision = 9 THEN
+        Lamp8_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 9 AND FIO.iInVision = 3 THEN
+        Lamp9_Blue := TRUE;
+END_IF	
+IF nCounter = 9 AND FIO.iInVision = 6 THEN
+        Lamp9_Green := TRUE;
+END_IF		
+IF nCounter = 9 AND FIO.iInVision = 9 THEN
+        Lamp9_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 10 AND FIO.iInVision = 3 THEN
+        Lamp10_Blue := TRUE;
+END_IF	
+IF nCounter = 10 AND FIO.iInVision = 6 THEN
+        Lamp10_Green := TRUE;
+END_IF		
+IF nCounter = 10 AND FIO.iInVision = 9 THEN
+        Lamp10_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 11 AND FIO.iInVision = 3 THEN
+        Lamp11_Blue := TRUE;
+END_IF	
+IF nCounter = 11 AND FIO.iInVision = 6 THEN
+        Lamp11_Green := TRUE;
+END_IF		
+IF nCounter = 11 AND FIO.iInVision = 9 THEN
+        Lamp11_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 12 AND FIO.iInVision = 3 THEN
+        Lamp12_Blue := TRUE;
+END_IF	
+IF nCounter = 12 AND FIO.iInVision = 6 THEN
+        Lamp12_Green := TRUE;
+END_IF		
+IF nCounter = 12 AND FIO.iInVision = 9 THEN
+        Lamp12_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 13 AND FIO.iInVision = 3 THEN
+        Lamp13_Blue := TRUE;
+END_IF	
+IF nCounter = 13 AND FIO.iInVision = 6 THEN
+        Lamp13_Green := TRUE;
+END_IF		
+IF nCounter = 13 AND FIO.iInVision = 9 THEN
+        Lamp13_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 14 AND FIO.iInVision = 3 THEN
+        Lamp14_Blue := TRUE;
+END_IF	
+IF nCounter = 14 AND FIO.iInVision = 6 THEN
+        Lamp14_Green := TRUE;
+END_IF		
+IF nCounter = 14 AND FIO.iInVision = 9 THEN
+        Lamp14_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 15 AND FIO.iInVision = 3 THEN
+        Lamp15_Blue := TRUE;
+END_IF	
+IF nCounter = 15 AND FIO.iInVision = 6 THEN
+        Lamp15_Green := TRUE;
+END_IF		
+IF nCounter = 15 AND FIO.iInVision = 9 THEN
+        Lamp15_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 16 AND FIO.iInVision = 3 THEN
+        Lamp16_Blue := TRUE;
+END_IF	
+IF nCounter = 16 AND FIO.iInVision = 6 THEN
+        Lamp16_Green := TRUE;
+END_IF		
+IF nCounter = 16 AND FIO.iInVision = 9 THEN
+        Lamp16_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 17 AND FIO.iInVision = 3 THEN
+        Lamp17_Blue := TRUE;
+END_IF	
+IF nCounter = 17 AND FIO.iInVision = 6 THEN
+        Lamp17_Green := TRUE;
+END_IF		
+IF nCounter = 17 AND FIO.iInVision = 9 THEN
+        Lamp17_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 18 AND FIO.iInVision = 3 THEN
+        Lamp18_Blue := TRUE;
+END_IF	
+IF nCounter = 18 AND FIO.iInVision = 6 THEN
+        Lamp18_Green := TRUE;
+END_IF		
+IF nCounter = 18 AND FIO.iInVision = 9 THEN
+        Lamp18_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 19 AND FIO.iInVision = 3 THEN
+        Lamp19_Blue := TRUE;
+END_IF	
+IF nCounter = 19 AND FIO.iInVision = 6 THEN
+        Lamp19_Green := TRUE;
+END_IF		
+IF nCounter = 19 AND FIO.iInVision = 9 THEN
+        Lamp19_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 20 AND FIO.iInVision = 3 THEN
+        Lamp20_Blue := TRUE;
+END_IF	
+IF nCounter = 20 AND FIO.iInVision = 6 THEN
+        Lamp20_Green := TRUE;
+END_IF		
+IF nCounter = 20 AND FIO.iInVision = 9 THEN
+        Lamp20_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 21 AND FIO.iInVision = 3 THEN
+        Lamp21_Blue := TRUE;
+END_IF	
+IF nCounter = 21 AND FIO.iInVision = 6 THEN
+        Lamp21_Green := TRUE;
+END_IF		
+IF nCounter = 21 AND FIO.iInVision = 9 THEN
+        Lamp21_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 22 AND FIO.iInVision = 3 THEN
+        Lamp22_Blue := TRUE;
+END_IF	
+IF nCounter = 22 AND FIO.iInVision = 6 THEN
+        Lamp22_Green := TRUE;
+END_IF		
+IF nCounter = 22 AND FIO.iInVision = 9 THEN
+        Lamp22_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 23 AND FIO.iInVision = 3 THEN
+        Lamp23_Blue := TRUE;
+END_IF	
+IF nCounter = 23 AND FIO.iInVision = 6 THEN
+        Lamp23_Green := TRUE;
+END_IF		
+IF nCounter = 23 AND FIO.iInVision = 9 THEN
+        Lamp23_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 24 AND FIO.iInVision = 3 THEN
+        Lamp24_Blue := TRUE;
+END_IF	
+IF nCounter = 24 AND FIO.iInVision = 6 THEN
+        Lamp24_Green := TRUE;
+END_IF		
+IF nCounter = 24 AND FIO.iInVision = 9 THEN
+        Lamp24_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 25 AND FIO.iInVision = 3 THEN
+        Lamp25_Blue := TRUE;
+END_IF	
+IF nCounter = 25 AND FIO.iInVision = 6 THEN
+        Lamp25_Green := TRUE;
+END_IF		
+IF nCounter = 25 AND FIO.iInVision = 9 THEN
+        Lamp25_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 26 AND FIO.iInVision = 3 THEN
+        Lamp26_Blue := TRUE;
+END_IF	
+IF nCounter = 26 AND FIO.iInVision = 6 THEN
+        Lamp26_Green := TRUE;
+END_IF		
+IF nCounter = 26 AND FIO.iInVision = 9 THEN
+        Lamp26_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 27 AND FIO.iInVision = 3 THEN
+        Lamp27_Blue := TRUE;
+END_IF	
+IF nCounter = 27 AND FIO.iInVision = 6 THEN
+        Lamp27_Green := TRUE;
+END_IF		
+IF nCounter = 27 AND FIO.iInVision = 9 THEN
+        Lamp27_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 28 AND FIO.iInVision = 3 THEN
+        Lamp28_Blue := TRUE;
+END_IF	
+IF nCounter = 28 AND FIO.iInVision = 6 THEN
+        Lamp28_Green := TRUE;
+END_IF		
+IF nCounter = 28 AND FIO.iInVision = 9 THEN
+        Lamp28_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 29 AND FIO.iInVision = 3 THEN
+        Lamp29_Blue := TRUE;
+END_IF	
+IF nCounter = 29 AND FIO.iInVision = 6 THEN
+        Lamp29_Green := TRUE;
+END_IF		
+IF nCounter = 29 AND FIO.iInVision = 9 THEN
+        Lamp29_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 30 AND FIO.iInVision = 3 THEN
+        Lamp30_Blue := TRUE;
+END_IF	
+IF nCounter = 30 AND FIO.iInVision = 6 THEN
+        Lamp30_Green := TRUE;
+END_IF		
+IF nCounter = 30 AND FIO.iInVision = 9 THEN
+        Lamp30_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 31 AND FIO.iInVision = 3 THEN
+        Lamp31_Blue := TRUE;
+END_IF	
+IF nCounter = 31 AND FIO.iInVision = 6 THEN
+        Lamp31_Green := TRUE;
+END_IF		
+IF nCounter = 31 AND FIO.iInVision = 9 THEN
+        Lamp31_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 32 AND FIO.iInVision = 3 THEN
+        Lamp32_Blue := TRUE;
+END_IF	
+IF nCounter = 32 AND FIO.iInVision = 6 THEN
+        Lamp32_Green := TRUE;
+END_IF		
+IF nCounter = 32 AND FIO.iInVision = 9 THEN
+        Lamp32_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 33 AND FIO.iInVision = 3 THEN
+        Lamp33_Blue := TRUE;
+END_IF	
+IF nCounter = 33 AND FIO.iInVision = 6 THEN
+        Lamp33_Green := TRUE;
+END_IF		
+IF nCounter = 33 AND FIO.iInVision = 9 THEN
+        Lamp33_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 34 AND FIO.iInVision = 3 THEN
+        Lamp34_Blue := TRUE;
+END_IF	
+IF nCounter = 34 AND FIO.iInVision = 6 THEN
+        Lamp34_Green := TRUE;
+END_IF		
+IF nCounter = 34 AND FIO.iInVision = 9 THEN
+        Lamp34_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 35 AND FIO.iInVision = 3 THEN
+        Lamp35_Blue := TRUE;
+END_IF	
+IF nCounter = 35 AND FIO.iInVision = 6 THEN
+        Lamp35_Green := TRUE;
+END_IF		
+IF nCounter = 35 AND FIO.iInVision = 9 THEN
+        Lamp35_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 36 AND FIO.iInVision = 3 THEN
+        Lamp36_Blue := TRUE;
+END_IF	
+IF nCounter = 36 AND FIO.iInVision = 6 THEN
+        Lamp36_Green := TRUE;
+END_IF		
+IF nCounter = 36 AND FIO.iInVision = 9 THEN
+        Lamp36_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 37 AND FIO.iInVision = 3 THEN
+        Lamp37_Blue := TRUE;
+END_IF	
+IF nCounter = 37 AND FIO.iInVision = 6 THEN
+        Lamp37_Green := TRUE;
+END_IF		
+IF nCounter = 37 AND FIO.iInVision = 9 THEN
+        Lamp37_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 38 AND FIO.iInVision = 3 THEN
+        Lamp38_Blue := TRUE;
+END_IF	
+IF nCounter = 38 AND FIO.iInVision = 6 THEN
+        Lamp38_Green := TRUE;
+END_IF		
+IF nCounter = 38 AND FIO.iInVision = 9 THEN
+        Lamp38_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 39 AND FIO.iInVision = 3 THEN
+        Lamp39_Blue := TRUE;
+END_IF	
+IF nCounter = 39 AND FIO.iInVision = 6 THEN
+        Lamp39_Green := TRUE;
+END_IF		
+IF nCounter = 39 AND FIO.iInVision = 9 THEN
+        Lamp39_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 40 AND FIO.iInVision = 3 THEN
+        Lamp40_Blue := TRUE;
+END_IF	
+IF nCounter = 40 AND FIO.iInVision = 6 THEN
+        Lamp40_Green := TRUE;
+END_IF		
+IF nCounter = 40 AND FIO.iInVision = 9 THEN
+        Lamp40_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 41 AND FIO.iInVision = 3 THEN
+        Lamp41_Blue := TRUE;
+END_IF	
+IF nCounter = 41 AND FIO.iInVision = 6 THEN
+        Lamp41_Green := TRUE;
+END_IF		
+IF nCounter = 41 AND FIO.iInVision = 9 THEN
+        Lamp41_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 42 AND FIO.iInVision = 3 THEN
+        Lamp42_Blue := TRUE;
+END_IF	
+IF nCounter = 42 AND FIO.iInVision = 6 THEN
+        Lamp42_Green := TRUE;
+END_IF		
+IF nCounter = 42 AND FIO.iInVision = 9 THEN
+        Lamp42_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 43 AND FIO.iInVision = 3 THEN
+        Lamp43_Blue := TRUE;
+END_IF	
+IF nCounter = 43 AND FIO.iInVision = 6 THEN
+        Lamp43_Green := TRUE;
+END_IF		
+IF nCounter = 43 AND FIO.iInVision = 9 THEN
+        Lamp43_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 44 AND FIO.iInVision = 3 THEN
+        Lamp44_Blue := TRUE;
+END_IF	
+IF nCounter = 44 AND FIO.iInVision = 6 THEN
+        Lamp44_Green := TRUE;
+END_IF		
+IF nCounter = 44 AND FIO.iInVision = 9 THEN
+        Lamp44_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 45 AND FIO.iInVision = 3 THEN
+        Lamp45_Blue := TRUE;
+END_IF	
+IF nCounter = 45 AND FIO.iInVision = 6 THEN
+        Lamp45_Green := TRUE;
+END_IF		
+IF nCounter = 45 AND FIO.iInVision = 9 THEN
+        Lamp45_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 46 AND FIO.iInVision = 3 THEN
+        Lamp46_Blue := TRUE;
+END_IF	
+IF nCounter = 46 AND FIO.iInVision = 6 THEN
+        Lamp46_Green := TRUE;
+END_IF		
+IF nCounter = 46 AND FIO.iInVision = 9 THEN
+        Lamp46_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 47 AND FIO.iInVision = 3 THEN
+        Lamp47_Blue := TRUE;
+END_IF	
+IF nCounter = 47 AND FIO.iInVision = 6 THEN
+        Lamp47_Green := TRUE;
+END_IF		
+IF nCounter = 47 AND FIO.iInVision = 9 THEN
+        Lamp47_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 48 AND FIO.iInVision = 3 THEN
+        Lamp48_Blue := TRUE;
+END_IF	
+IF nCounter = 48 AND FIO.iInVision = 6 THEN
+        Lamp48_Green := TRUE;
+END_IF		
+IF nCounter = 48 AND FIO.iInVision = 9 THEN
+        Lamp48_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 49 AND FIO.iInVision = 3 THEN
+        Lamp49_Blue := TRUE;
+END_IF	
+IF nCounter = 49 AND FIO.iInVision = 6 THEN
+        Lamp49_Green := TRUE;
+END_IF		
+IF nCounter = 49 AND FIO.iInVision = 9 THEN
+        Lamp49_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 50 AND FIO.iInVision = 3 THEN
+        Lamp50_Blue := TRUE;
+END_IF	
+IF nCounter = 50 AND FIO.iInVision = 6 THEN
+        Lamp50_Green := TRUE;
+END_IF		
+IF nCounter = 50 AND FIO.iInVision = 9 THEN
+        Lamp50_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 51 AND FIO.iInVision = 3 THEN
+        Lamp41_Blue := TRUE;
+END_IF	
+IF nCounter = 51 AND FIO.iInVision = 6 THEN
+        Lamp41_Green := TRUE;
+END_IF		
+IF nCounter = 51 AND FIO.iInVision = 9 THEN
+        Lamp41_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 52 AND FIO.iInVision = 3 THEN
+        Lamp52_Blue := TRUE;
+END_IF	
+IF nCounter = 52 AND FIO.iInVision = 6 THEN
+        Lamp52_Green := TRUE;
+END_IF		
+IF nCounter = 52 AND FIO.iInVision = 9 THEN
+        Lamp52_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 53 AND FIO.iInVision = 3 THEN
+        Lamp53_Blue := TRUE;
+END_IF	
+IF nCounter = 53 AND FIO.iInVision = 6 THEN
+        Lamp53_Green := TRUE;
+END_IF		
+IF nCounter = 53 AND FIO.iInVision = 9 THEN
+        Lamp53_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------
+
+IF nCounter = 54 AND FIO.iInVision = 3 THEN
+        Lamp54_Blue := TRUE;
+END_IF	
+IF nCounter = 54 AND FIO.iInVision = 6 THEN
+        Lamp54_Green := TRUE;
+END_IF		
+IF nCounter = 54 AND FIO.iInVision = 9 THEN
+        Lamp54_Metal := TRUE;
+END_IF
+
+//---------------------------------------------------	]]></ST>
+    </Implementation>
+    <LineIds Name="HMI">
+      <LineId Id="100" Count="0" />
+      <LineId Id="102" Count="3" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="48" Count="1" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="46" Count="1" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="127" Count="649" />
+      <LineId Id="40" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

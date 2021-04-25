@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="MAIN" Id="{7f7638e9-7a1d-4c26-91a2-7aeecf20f056}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//In Main we just run all our program for pick and place stack mashine. 
+//As you can see we have 6 program and a HMI program for our mashine. 
+
+P_1Start();
+P_2PickUP();
+P_3Pack();
+P_4Packing();
+P_5MovingToStack();
+P_6Stack();
+HMI();]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="74" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="60" Count="4" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="69" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

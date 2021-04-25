@@ -1,0 +1,280 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="P_2PickUP" Id="{f81accdf-79ad-420e-a6ed-ebdb2655ce8e}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM P_2PickUP
+VAR
+	nState: INT;
+	
+	//Vision Color for Lid
+	Blue:	INT:=3;
+	Green:	INT:=6;
+	Metal:	INT:=9;
+	
+	//Timers for the different state to happen. It is good to put in timers so the machinery have time to do the different
+	// state before it moves on to the next state else everything will happen really fast.
+	fbTimerMoving : TON;	// Timer in the moving state so the XYZ arm have time to process before moving till next state.
+	fbTimerPickUP : TON;	 // 
+	fbTimerGrab : TON;
+	fbTimerGrab2 : TON;
+	fbTimerDrop : TON;
+	fbTimerMovingLid : TON;
+	fbTimerWaiting : TON;
+END_VAR
+
+VAR CONSTANT
+	//This is the Constant Variables that we use to for the different state in our Case OF Statement.
+	Standby: 		INT:=00;
+	Start:			INT:=01;
+	ReadVision: 	INT:=02;
+	atEntry: 		INT:=10;
+	Moving: 		INT:=20;
+	PickUP:			INT:=21;
+	PickUP2: 		INT:=22;
+	Grab: 			INT:=23;
+	Grab2: 			INT:=24;
+	Drop: 			INT:=25;
+	MovingLid: 		INT:=26;
+	MovingLid2: 	INT:=27;
+	MovingStop: 	INT:=29;
+	Waiting: 		INT:=30;
+	Stopping: 		INT:=40;
+	Resetting: 		INT:=50;
+	Estop:			INT:=99;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// This is our second program where we emit a base and let the vision cam tell us which color the base is so the first XYZ arm can pick up the lid and send if 
+// to pack.
+
+
+CASE nState OF 
+	Standby:	
+		IF FIO.bEbStart=TRUE THEN
+			nState:=Start;
+		END_IF	
+	
+	Start: 
+			IF FIO.bInPaSensBlue AND FIO.bInPaSensGreen AND FIO.bInPaSensMetal THEN
+				FIO.bInEmitBase:=TRUE;
+				nState:=ReadVision;
+			END_IF	
+			
+	ReadVision: //vision cam read the color of the base
+				IF FIO.iInVision=Blue THEN
+					FIO.rInPaMoveX:=9;			
+					nState:=Moving;	
+				END_IF
+				IF FIO.iInVision=Green THEN
+					FIO.rInPaMoveX:=5;					
+					nState:=Moving;
+				END_IF
+				IF FIO.iInVision=Metal THEN 
+					FIO.rInPaMoveX:=1;			
+					nState:=Moving;
+				END_IF
+				
+	Moving:
+		IF FIO.rInPaMoveX=9 OR FIO.rInPaMoveX=5 OR FIO.rInPaMoveX=1 THEN
+			FIO.rInPaMoveY:=0.5;
+		 fbTimerMoving(IN:=TRUE,PT:=T#1S);
+		 IF fbTimerMoving.Q THEN
+			fbTimerMoving(IN:=FALSE);
+			nState:=PickUP; 
+		 END_IF		
+		END_IF
+	
+	PickUP:
+		IF FIO.rInPaMoveY=0.5 THEN
+			FIO.rInPaMoveZ:=9;
+			FIO.bInPaToolRot:=TRUE;
+			fbTimerPickUP(IN:=TRUE,PT:=T#1S);
+		 IF fbTimerPickUP.Q THEN
+			 fbTimerPickUP(IN:=FALSE);
+			nState:=Grab; 
+		 END_IF	
+		END_IF
+		
+	Grab:
+		IF FIO.rInPaMoveZ=9 THEN
+			FIO.bInPaGrab:=TRUE;
+		fbTimerGrab(IN:=TRUE,PT:=T#1S);
+		 IF fbTimerGrab.Q THEN
+			fbTimerGrab(IN:=FALSE);
+			nState:=Grab2; 
+		 END_IF
+		END_IF
+		
+	Grab2:	
+		IF FIO.bInPaGrab=TRUE THEN
+			FIO.rInPaMoveZ:=5;
+			FIO.rInPaMoveY:=8;
+			fbTimerGrab2(IN:=TRUE,PT:=T#1S);	
+			IF fbTimerGrab2.Q THEN
+				fbTimerGrab2(IN:=FALSE);
+				nState:=Drop;
+		 	END_IF				
+		END_IF
+	
+	Drop:
+		IF FIO.bInPaGrab=TRUE THEN
+			FIO.rInPaMoveZ:=8.5;
+			fbTimerDrop(IN:=TRUE,PT:=T#1S);	
+			IF fbTimerDrop.Q THEN
+				fbTimerDrop(IN:=FALSE);
+				nState:=MovingLid; 
+		 	END_IF
+		 END_IF
+		 
+	MovingLid:				
+			IF FIO.rInPaMoveZ=8.5 THEN
+				FIO.bInPaGrab:=FALSE;
+			END_IF
+				fbTimerMovingLid(IN:=TRUE,PT:=T#1S);	
+			IF fbTimerMovingLid.Q THEN
+				fbTimerMovingLid(IN:=FALSE);
+				nState:=MovingLid2; 
+		 	END_IF
+			
+	MovingLid2:		
+			IF FIO.bInPaGrab=FALSE THEN
+				FIO.rInPaMoveX:=0;
+				FIO.rInPaMoveY:=0;
+				FIO.rInPaMoveZ:=0;
+				FIO.bInPaToolRot:=FALSE;
+				FIO.bInConvSorting:=TRUE;
+				nState:=waiting; 	
+			END_IF
+//----------------------------------------------------------------------------//
+	Waiting:
+			IF FIO.bPP_LidClamp=TRUE THEN
+			fbTimerWaiting(IN:=TRUE,PT:=T#1S);	
+			IF fbTimerWaiting.Q THEN
+				fbTimerWaiting(IN:=FALSE); 
+				nState:=Start;
+			END_IF
+			END_IF
+//----------------------------------------------------------------------------//
+
+		
+
+	
+	Stopping:
+		IF FIO.bEbStop = FALSE THEN
+			FIO.bEbStopLight:=TRUE;
+		ELSIF FIO.bEbReset=TRUE THEN
+				FIO.bEbStopLight:=FALSE;	
+			nState:=Standby;	
+		END_IF	
+
+//----------------------------------------------------------------------------// 
+	ELSE
+		nState:=9999;	
+END_CASE
+
+IF NOT FIO.bEbStop THEN
+		nState:=Stopping;	
+END_IF
+		
+]]></ST>
+    </Implementation>
+    <LineIds Name="P_2PickUP">
+      <LineId Id="591" Count="0" />
+      <LineId Id="692" Count="0" />
+      <LineId Id="592" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="648" Count="1" />
+      <LineId Id="652" Count="0" />
+      <LineId Id="651" Count="0" />
+      <LineId Id="650" Count="0" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="693" Count="0" />
+      <LineId Id="94" Count="1" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="96" Count="1" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="123" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="694" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="202" Count="1" />
+      <LineId Id="269" Count="1" />
+      <LineId Id="282" Count="0" />
+      <LineId Id="271" Count="1" />
+      <LineId Id="204" Count="0" />
+      <LineId Id="193" Count="0" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="212" Count="1" />
+      <LineId Id="456" Count="0" />
+      <LineId Id="273" Count="1" />
+      <LineId Id="280" Count="0" />
+      <LineId Id="275" Count="0" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="329" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="240" Count="1" />
+      <LineId Id="276" Count="1" />
+      <LineId Id="281" Count="0" />
+      <LineId Id="278" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="330" Count="0" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="246" Count="2" />
+      <LineId Id="295" Count="3" />
+      <LineId Id="294" Count="0" />
+      <LineId Id="244" Count="0" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="287" Count="0" />
+      <LineId Id="306" Count="0" />
+      <LineId Id="292" Count="1" />
+      <LineId Id="289" Count="2" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="311" Count="0" />
+      <LineId Id="309" Count="1" />
+      <LineId Id="397" Count="1" />
+      <LineId Id="381" Count="3" />
+      <LineId Id="380" Count="0" />
+      <LineId Id="386" Count="1" />
+      <LineId Id="319" Count="0" />
+      <LineId Id="390" Count="0" />
+      <LineId Id="403" Count="1" />
+      <LineId Id="457" Count="0" />
+      <LineId Id="552" Count="0" />
+      <LineId Id="388" Count="1" />
+      <LineId Id="399" Count="1" />
+      <LineId Id="550" Count="0" />
+      <LineId Id="509" Count="2" />
+      <LineId Id="401" Count="1" />
+      <LineId Id="551" Count="0" />
+      <LineId Id="312" Count="0" />
+      <LineId Id="735" Count="1" />
+      <LineId Id="741" Count="0" />
+      <LineId Id="634" Count="0" />
+      <LineId Id="640" Count="2" />
+      <LineId Id="646" Count="1" />
+      <LineId Id="643" Count="0" />
+      <LineId Id="633" Count="0" />
+      <LineId Id="638" Count="0" />
+      <LineId Id="637" Count="0" />
+      <LineId Id="243" Count="0" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="631" Count="1" />
+      <LineId Id="205" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

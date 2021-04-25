@@ -1,0 +1,232 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="P_4Packing" Id="{44301db5-00b1-4ee0-9258-716fda2a1772}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM P_4Packing
+VAR
+	nState: INT;
+	
+	//Timers
+	fbTimerGrabX : TON;
+	fbTimerGrabY : TON;
+	fbTimerGrabZ : TON;
+	fbTimerGrab : TON;
+	fbTimerLift : TON;
+	fbTimerDrop1 : TON;
+	fbTimerDrop2 : TON;
+	fbTimerMoving2 : TON;
+	fbTimerMoving3 : TON;
+	fbTimerMovingLoad : TON;
+	fbTimerWaiting : TON;
+	fbTimerEmitPal: TON;
+	
+	iCounterTrig: R_trig;
+	
+END_VAR
+VAR CONSTANT
+	//Here we define our constant where we want the different positon to be. This is instead of making steps you can call this fixed steps.
+	Standby: 	INT:=00;
+	GrabX:		INT:=10;
+	GrabY:		INT:=11;
+	GrabZ:		INT:=12;
+	Grab:		INT:=13;
+	Lift:		INT:=15;
+	Drop1:		INT:=20;
+	Drop2:		INT:=21;
+	Moving1    : INT := 30;
+	Moving2    : INT := 31;
+	Moving3    : INT := 32;
+	MovingStop : INT := 22;
+	AtLoad:		INT:=35;	
+	Waiting    : INT := 40;
+	Stopping   : INT := 50;
+	Resetting  : INT := 60;
+	Estop      : INT := 99;
+		
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// This is our fourth program is where we count the anount of boxes that have been put together  and the second xyz arm will pick up the box 
+// and place it on the pallet.
+
+iCounterTrig(CLK:=FIO.bPP_PosRais_Base);  //define a trigger so we can use it to count the amount of boxes that have been put together.  
+
+IF iCounterTrig.Q THEN                    //box counter
+	FIO.iEbCounter:=FIO.iEbCounter+1;
+END_IF
+
+
+ 
+CASE nState OF
+	
+	Standby:      //the sensor is true when there are a box and a palled will emit 
+		IF  FIO.bOutPaSens=TRUE THEN
+			FIO.bScEmitPallet:=TRUE;	
+			nState:=GrabX;		
+		END_IF	
+				
+
+	GrabX:		//we move the XYZ arm in the X position 
+		IF FIO.bOutPaSens=TRUE THEN    
+			FIO.rOutPaMoveX:=4.5;
+			fbTimerGrabX(IN:=TRUE,PT:=T#1S);	
+			IF fbTimerGrabX.Q THEN
+				fbTimerGrabX(IN:=FALSE); 
+				nState:=GrabY;
+			END_IF	
+		END_IF
+
+	GrabY:	//we move the XYZ arm in the Y position 
+		IF FIO.rOutPaMoveX=4.5 THEN 
+			FIO.rOutPaMoveY:=9.5;
+			fbTimerGrabY(IN:=TRUE,PT:=T#1S);	
+			IF fbTimerGrabY.Q THEN
+				fbTimerGrabY(IN:=FALSE); 
+				nState:=GrabZ;
+			END_IF	
+		END_IF
+	
+	GrabZ:  //we move the XYZ arm in the Z position 
+		IF FIO.rOutPaMoveY=9.5 THEN 
+			FIO.rOutPaMoveZ:=8.5;
+			FIO.bOutPaToolRot:=TRUE;
+			fbTimerGrabZ(IN:=TRUE,PT:=T#2S);	
+			IF fbTimerGrabZ.Q THEN
+				fbTimerGrabZ(IN:=FALSE); 
+				nState:=Grab;
+			END_IF				
+		END_IF
+	
+	Grab:   //we here we turn the grab on so it can pick up a box
+		IF FIO.bOutPaBoxDetected=TRUE THEN
+			FIO.bOutPaGrab:=TRUE;
+			fbTimerGrab(IN:=TRUE,PT:=T#1S);
+			 IF fbTimerGrab.Q THEN
+				fbTimerGrab(IN:=FALSE);
+				nState:=Lift; 
+		 	END_IF
+		END_IF	
+		
+	Lift:    //here we lift the box
+		IF FIO.bOutPaGrab=TRUE THEN
+			FIO.rOutPaMoveZ:=0;
+			fbTimerLift(IN:=TRUE,PT:=T#1S);
+			 IF fbTimerLift.Q THEN
+				fbTimerLift(IN:=FALSE);
+				nState:=Drop1;
+		 	END_IF					
+		END_IF	
+
+	Drop1:  // here move in Y axes so it is almost in the middle of the pallet
+		IF FIO.rOutPaMoveZ=0 THEN
+			FIO.rOutPaMoveY:=1.5;
+			fbTimerDrop1(IN:=TRUE,PT:=T#1S);
+			 IF fbTimerDrop1.Q THEN
+				fbTimerDrop1(IN:=FALSE);
+				nState:=Drop2;
+		 	END_IF
+		END_IF	
+		
+	Drop2:  //here we move the arm in Z position where we lower the har closer to the pallet and then we drop the box
+		IF FIO.bOutPaGrab=TRUE THEN
+			FIO.rOutPaMoveZ:=10;
+			fbTimerDrop2(IN:=TRUE,PT:=T#1S);
+			 IF fbTimerDrop2.Q THEN
+				fbTimerDrop2(IN:=FALSE);
+				FIO.bOutPaGrab:=FALSE;
+				nState:=Waiting;;
+		 	END_IF	
+		END_IF
+
+
+		
+//----------------------------------------------------------------------------//
+
+	Waiting:
+			nState:=Standby;
+		
+			
+		
+//----------------------------------------------------------------------------//
+
+
+	ELSE
+		nState:=9999;	
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="P_4Packing">
+      <LineId Id="417" Count="0" />
+      <LineId Id="510" Count="0" />
+      <LineId Id="418" Count="0" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="302" Count="0" />
+      <LineId Id="305" Count="1" />
+      <LineId Id="365" Count="0" />
+      <LineId Id="303" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="38" Count="1" />
+      <LineId Id="375" Count="0" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="363" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="51" Count="3" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="64" Count="3" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="69" Count="2" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="79" Count="3" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="91" Count="7" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="83" Count="2" />
+      <LineId Id="115" Count="3" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="183" Count="0" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="184" Count="0" />
+      <LineId Id="190" Count="0" />
+      <LineId Id="185" Count="2" />
+      <LineId Id="189" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="192" Count="1" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="110" Count="1" />
+      <LineId Id="122" Count="2" />
+      <LineId Id="317" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="552" Count="0" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="464" Count="3" />
+      <LineId Id="24" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

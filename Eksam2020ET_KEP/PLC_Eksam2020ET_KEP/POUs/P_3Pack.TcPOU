@@ -1,0 +1,286 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="P_3Pack" Id="{fe333432-a923-4835-8a79-97f45134b5af}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM P_3Pack
+VAR
+	nState: INT;
+	
+	fbTimerConvs: TON;
+	fbTimerPickUP: TON;
+	fbTimerGrab: TON;
+	fbMyTimer4: TON;
+	fbMyTimer5: TON;
+	fbMyTimer6: TON;
+	fbMyTimer7 : TON;
+	fbMyTimer8 : TON;
+	fbMyTimer9 : TON;
+	F_TRIGLid:F_TRIG;
+END_VAR
+
+VAR CONSTANT
+	Standby: 	INT:=00;
+	Start:		INT:=01;
+	atEntry: 	INT:=10;
+	Moving: 	INT:=20;
+	MovingStopLidClamp: INT:=21;
+	MovingStopBase: 	INT:=22;
+	PickUP: 	INT:=23;
+	PickUP2: 	INT:=24;
+	Grab: 		INT:=25;
+	Grab2: 		INT:=26;
+	Drop: 		INT:=27;
+	Moving2: 	INT:=28;
+	MovingPack: INT:=29;
+	RaiseBase:	INT:=65;
+	StoppingAtSens: INT:= 67;
+	Stopping: 	INT:=40;
+	Resetting: 	INT:=50;
+	Clamp:		INT:=60;
+	Waiting: 	INT:=30;
+	Estop: 		INT:=99;
+	
+	
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// This is our third program  in this program we put the lid together with the base so it can be a box.
+
+
+F_TRIGLid(CLK:=FIO.bPP_LidDetected);  //trigger for the sense at the lid pack
+
+CASE nState OF
+	Standby: 
+		nState:=Start;
+ 
+	Start:    
+		IF FIO.bInConvSorting=TRUE THEN
+			FIO.bPP_ConvBase1:=TRUE;
+			FIO.bPP_ConvBase2:=TRUE;
+			FIO.bPP_ConvLid:=TRUE;
+			fbTimerConvs(IN:=TRUE,PT:=T#1S);
+			IF fbTimerConvs.Q THEN
+			fbTimerConvs(IN:=FALSE); 
+			nState:=MovingStopBase;
+		END_IF	
+	END_IF
+	
+	MovingStopBase:
+			IF FIO.bPP_BaseDetected=TRUE THEN
+				FIO.bPP_ConvBase1:=FALSE;						
+				nState:=MovingStopLidClamp;			
+			END_IF
+	
+			
+	MovingStopLidClamp:	  // where the clam for lid and base are activated.
+		IF F_TRIGLid.Q THEN
+			FIO.bPP_LidClamp:=TRUE;
+			FIO.bPP_BaseClamp:=TRUE;	
+			nState:=PickUP;
+		END_IF
+		
+	PickUP:
+		IF FIO.bPP_LidClamp=TRUE AND FIO.bPP_BaseClamp=TRUE THEN
+			FIO.bPP_ConvBase2:=FALSE;
+			FIO.bInConvSorting:=FALSE;
+			FIO.bPP_MoveX:=TRUE;
+			fbTimerPickUP(IN:=TRUE,PT:=T#2S);
+				IF fbTimerPickUP.Q THEN
+					fbTimerPickUP(IN:=FALSE); 
+					nState:=Grab;
+				END_IF
+		END_IF
+	
+	Grab:
+		IF FIO.bPP_MoveX=TRUE THEN
+			FIO.bPP_ConvLid:=FALSE;
+			FIO.bPP_MoveZ:=TRUE;
+			FIO.bPP_Grab:=TRUE;
+			fbTimerGrab(IN:=TRUE,PT:=T#2S);
+				IF fbTimerGrab.Q THEN
+					fbTimerGrab(IN:=FALSE);
+					FIO.bPP_LidClamp:=FALSE; 
+					nState:=Grab2;
+				END_IF
+		END_IF
+
+	Grab2:
+		IF FIO.bPP_Grab=TRUE THEN
+			FIO.bPP_MoveZ:=FALSE;
+			fbMyTimer4(IN:=TRUE,PT:=T#2S);
+				IF fbMyTimer4.Q THEN
+					fbMyTimer4(IN:=FALSE); 
+					FIO.bPP_MoveX:=FALSE;
+					nState:=Drop;	
+				END_IF			
+		END_IF	
+	
+	Drop:
+		IF FIO.bPP_MoveX=FALSE THEN
+		fbMyTimer5(IN:=TRUE,PT:=T#2S);
+			IF fbMyTimer5.Q THEN
+				fbMyTimer5(IN:=FALSE); 
+				FIO.bPP_MoveZ:=TRUE;
+				nState:=Moving2;	
+			END_IF	
+		END_IF		
+	
+	Moving2:
+		IF FIO.bPP_MovingX=FALSE THEN	
+		fbMyTimer6(IN:=TRUE,PT:=T#2S);
+			IF fbMyTimer6.Q THEN
+				fbMyTimer6(IN:=FALSE);
+				FIO.bPP_Grab:=FALSE; 
+				nState:=MovingPack;	
+			END_IF							
+		END_IF
+	
+	MovingPack:
+		IF FIO.bPP_Grab=FALSE THEN
+			FIO.bPP_MoveZ:=FALSE;
+			FIO.bPP_BaseClamp:=FALSE;
+			fbMyTimer7(IN:=TRUE,PT:=T#2S);
+			IF fbMyTimer7.Q THEN
+				fbMyTimer7(IN:=FALSE);
+				nState:=RaiseBase;	
+			END_IF	
+		END_IF
+	
+	RaiseBase:
+		IF FIO.bPP_MoveZ=FALSE THEN
+			FIO.bPP_PosRais_Base:=TRUE;
+			FIO.bPP_ConvBase2:=TRUE;
+			FIO.bPP_ConvOut:=TRUE;
+			fbMyTimer8(IN:=TRUE,PT:=T#2S);
+			IF fbMyTimer8.Q THEN
+				fbMyTimer8(IN:=FALSE);
+				FIO.bPP_PosRais_Base:=FALSE;
+				nState:=StoppingAtSens;	
+			END_IF	
+		END_IF
+		
+	StoppingAtSens:
+		IF FIO.bOutPaSens = TRUE THEN
+			FIO.bPP_ConvOut:=FALSE;
+			nState:=Waiting;
+		END_IF
+//----------------------------------------------------------------------------//
+
+	Waiting:
+			nState:=Standby;
+		
+//----------------------------------------------------------------------------//		
+		
+	ELSE
+		nState:=9999;	
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="P_3Pack">
+      <LineId Id="474" Count="2" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="573" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="515" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="435" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="75" Count="2" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="436" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="176" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="144" Count="0" />
+      <LineId Id="183" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="204" Count="1" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="184" Count="0" />
+      <LineId Id="206" Count="0" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="193" Count="0" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="200" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="207" Count="0" />
+      <LineId Id="211" Count="2" />
+      <LineId Id="319" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="209" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="215" Count="0" />
+      <LineId Id="221" Count="0" />
+      <LineId Id="223" Count="3" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="219" Count="0" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="304" Count="4" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="137" Count="0" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="310" Count="2" />
+      <LineId Id="317" Count="0" />
+      <LineId Id="315" Count="0" />
+      <LineId Id="309" Count="0" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="299" Count="0" />
+      <LineId Id="301" Count="0" />
+      <LineId Id="303" Count="0" />
+      <LineId Id="318" Count="0" />
+      <LineId Id="325" Count="1" />
+      <LineId Id="347" Count="0" />
+      <LineId Id="329" Count="0" />
+      <LineId Id="324" Count="0" />
+      <LineId Id="302" Count="0" />
+      <LineId Id="396" Count="0" />
+      <LineId Id="300" Count="0" />
+      <LineId Id="332" Count="0" />
+      <LineId Id="337" Count="1" />
+      <LineId Id="340" Count="0" />
+      <LineId Id="342" Count="1" />
+      <LineId Id="348" Count="0" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="349" Count="0" />
+      <LineId Id="341" Count="0" />
+      <LineId Id="336" Count="0" />
+      <LineId Id="351" Count="0" />
+      <LineId Id="334" Count="0" />
+      <LineId Id="350" Count="0" />
+      <LineId Id="335" Count="0" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="333" Count="0" />
+      <LineId Id="355" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="356" Count="2" />
+      <LineId Id="353" Count="1" />
+      <LineId Id="525" Count="2" />
+      <LineId Id="28" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

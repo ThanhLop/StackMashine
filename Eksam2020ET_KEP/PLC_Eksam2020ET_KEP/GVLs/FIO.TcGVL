@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <GVL Name="FIO" Id="{ddf21135-1c2c-4a5f-9f52-e76c79fcfe84}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	//SENSORS:
+
+
+//Bool
+
+bFACTORYRunning: BOOL;
+bFACTORYPaused: BOOL;
+bFACTORYReset1: BOOL;
+bUnknown1: BOOL;
+bUnknown2: BOOL;
+bPP_ItemDetected: BOOL;
+bPP_MovingX: BOOL;
+bPP_MovingZ: BOOL;
+bPP_BaseDetected: BOOL;
+bPP_BaseClamped: BOOL;
+bPP_PosLimitBase: BOOL;
+bPP_LidClamped: BOOL;
+bPP_PosLimitLid: BOOL;
+bPP_PartLeaving: BOOL;
+bPP_LidDetected: BOOL;
+bEbStart: BOOL;
+bEbReset: BOOL;
+bEbStop: BOOL;
+bEbES: BOOL;
+bEbManual: BOOL;
+bEbAuto: BOOL;
+bSC_AtLeft: BOOL;
+bInPaMovingXY: BOOL;
+bInPaMovinZ: BOOL;
+bInPaPosLimit: BOOL;
+bInPaBoxDetected: BOOL;
+bSC_AtMiddle: BOOL;
+bSC_AtRight: BOOL;
+bOutPaMovingXY: BOOL;
+bOutPaMovingZ: BOOL;
+bOutPaPosLimit: BOOL;
+bOutPaBoxDetected: BOOL;
+bSC_MovingZ: BOOL;
+bSC_MovingX: BOOL;
+bScAtLoad: BOOL;
+bInPaSensBlue: BOOL;
+bInPaSensGreen: BOOL;
+bInPaSensMetal: BOOL;
+bOutPaSens: BOOL;
+bSsSensConv1: BOOL;
+bSsSensConv2: BOOL;
+bSsSensConv3: BOOL;
+bPP_BaseSens: BOOL;
+
+
+//Float
+
+rFACTORYTimeScale: REAL;
+rInPaPosY: LREAL;
+rInPaPosZ: LREAL;
+rInPaPosX: LREAL;
+rOutPaPosY: REAL;
+rOutPaPosZ: REAL;
+rOutPaPosX: REAL;
+
+
+//Int
+
+iInVision: INT;
+iRfidW_ReadData: INT;
+iRfidW_CmdId: INT;
+iRfidW_Status: INT;
+iRfidR_ReadData: INT;
+iRfidR_CmdId: INT;
+iRfidR_Status: INT;
+
+//ACTUATORS:
+
+//Bool
+
+bFACTORYRun: BOOL;
+bFACTORYPause: BOOL;
+bFACTORYReset2: BOOL;
+bUnknown3: BOOL;
+bUnknown4: BOOL;
+bUnknown5: BOOL;
+bUnknown6: BOOL;
+bPP_Grab: BOOL;
+bPP_MoveX: BOOL;
+bPP_MoveZ: BOOL;
+bInEmitBase: BOOL;
+bPP_ConvLid: BOOL;
+bPP_BaseClamp: BOOL;
+bPP_PosRais_Base: BOOL;
+bPP_LidClamp: BOOL;
+bPP_PosRaise_Lid: BOOL;
+bEbStartLight: BOOL;
+bEbResetLight: BOOL;
+bEbStopLight: BOOL;
+bScConv1: BOOL;
+bInConvGreen: BOOL;
+bInConvMetal: BOOL;
+bInConvSorting: BOOL;
+bInConvBlue: BOOL;
+bInPaGrab: BOOL;
+bInPaToolRot: BOOL;
+bSC_Left: BOOL;
+bSC_Right: BOOL;
+bSC_Lift: BOOL;
+bOutPaGrab: BOOL;
+bOutPaToolRot: BOOL;
+bScConv2: BOOL;
+bScLoadingConv: BOOL;
+bInEmitMetalLid: BOOL;
+bInEmitGreenLid: BOOL;
+bInEmitBlueLid: BOOL;
+bPP_ConvOut: BOOL;
+bScEmitPallet: BOOL;
+bRollerStopOut: BOOL;
+bScConv3: BOOL;
+bRfidW_ExeCmd: BOOL;
+bRfidR_ExeCmd: BOOL;
+bPP_ConvBase2: BOOL;
+bPP_ConvBase1: BOOL;
+
+
+//Float
+
+rInPaMoveY: REAL;
+rInPaMoveZ: REAL;
+rInPaMoveX: REAL;
+rOutPaMoveY: REAL;
+rOutPaMoveZ: REAL;
+rOutPaMoveX: REAL;
+
+//Int
+
+iFACTORYCameraPosition: INT;
+iEbCounter: INT;
+iSC_TargetPos: INT;
+iRfidW_MemIndex: INT;
+iRfidW_WriteData: INT;
+iRfidW_Cmd: INT;
+iRfidR_MemIndex: INT;
+iRfidR_WriteData: INT;
+iRfidR_Cmd: INT;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

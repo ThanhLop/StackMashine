@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="P_5MovingToStack" Id="{716708e1-0f1a-418e-b3c9-94bc875e1667}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM P_5MovingToStack
+VAR
+	nState: INT;
+	
+	//Timers
+	fbTimerGrabX : TON;
+	fbTimerGrabY : TON;
+	fbTimerGrabZ : TON;
+	fbTimerGrab : TON;
+	fbTimerLift : TON;
+	fbTimerDrop1 : TON;
+	fbTimerDrop2 : TON;
+	fbTimerMoving1 : TON;
+	fbTimerMoving2 : TON;
+	fbTimerMoving3 : TON;
+	fbTimerMovingLoad : TON;
+	fbTimerWaiting : TON;
+	fbTimerEmitPal: TON;
+END_VAR
+VAR CONSTANT
+	Standby: 	INT := 00;
+	atEntry: 	INT := 10;
+	GrabX:		INT:=10;
+	GrabY:		INT:=11;
+	GrabZ:		INT:=12;
+	Grab:		INT:=13;
+	Lift:		INT:=15;
+	Drop1:		INT:=20;
+	Drop2:		INT:=21;
+	Moving1    : INT := 30;
+	Moving2    : INT := 31;
+	Moving3    : INT := 32;
+	MovingStop : INT := 22;
+	AtLoad:		INT:=35;	
+	Waiting    : INT := 40;
+	Stopping   : INT := 50;
+	Resetting  : INT := 60;
+	Estop      : INT := 9999;
+	
+	
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// This is our fifth program where we make sure to emit a pallet sent the XYZ arn to it's start position. 
+// it is also here where we move the pallet with box so it can be stacked in the next program
+
+//we have a If statement when the sensor at the OutPaSens is true then we emit a pallet else we don't.
+IF  FIO.bOutPaSens=TRUE THEN    
+	FIO.bScEmitPallet:=TRUE;
+ELSE 
+	FIO.bScEmitPallet:=FALSE;			
+END_IF	
+
+CASE nState OF 
+	Standby: // we make sure that the grab have stop and there are no box at the OutPaSens then the xyz arm cna move to its home position. 
+		IF FIO.bOutPaGrab=FALSE AND FIO.bSsSensConv1=TRUE AND FIO.bOutPaSens=FALSE THEN
+			FIO.rOutPaMoveX:=0;
+			FIO.rOutPaMoveY:=0;
+			FIO.rOutPaMoveZ:=0;
+			FIO.bOutPaToolRot:=FALSE;
+			fbTimerMoving2(IN:=TRUE,PT:=T#1S);
+			IF fbTimerMoving2.Q THEN
+				fbTimerMoving2(IN:=FALSE);
+				nState:=Moving1;
+			END_IF
+		END_IF
+		
+	Moving1:  // if the Sensor at Conveyor1 is True it means there is a pallet  and the grab is false that mean that the box have been delivered 
+			IF FIO.bSsSensConv1=TRUE AND FIO.bOutPaGrab=FALSE AND FIO.rOutPaMoveX=0 THEN  
+					FIO.bScConv1:=TRUE; //here we start the convayer so the pallet can move 
+					nState:=Moving2;
+			END_IF
+
+	
+	Moving2:  // moving to next conveayer 
+		IF FIO.bSsSensConv2=TRUE THEN
+			FIO.bScConv2:=TRUE;
+			fbTimerMoving2(IN:=TRUE,PT:=T#1S);
+			 IF fbTimerMoving2.Q THEN
+				fbTimerMoving2(IN:=FALSE);
+				FIO.bScConv1:=FALSE;
+				nState:=Moving3;
+		 	END_IF					 
+		END_IF
+	
+	Moving3: //moving though the last conveyor before it is at the load conveyor. 
+		IF FIO.bSsSensConv3=TRUE THEN 
+			FIO.bScConv3:=TRUE;
+			fbTimerMoving3(IN:=TRUE,PT:=T#1S);
+			 IF fbTimerMoving3.Q THEN
+				fbTimerMoving3(IN:=FALSE);
+				FIO.bScConv2:=FALSE;
+				nState:=Waiting;
+		 	END_IF						
+		END_IF
+		
+//----------------------------------------------------------------------------//
+
+	Waiting:
+			nState:=Standby;
+		
+//----------------------------------------------------------------------------//		
+		
+	ELSE 
+		nState:=9999; 	
+		
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="P_5MovingToStack">
+      <LineId Id="178" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="179" Count="1" />
+      <LineId Id="112" Count="3" />
+      <LineId Id="110" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="12" Count="5" />
+      <LineId Id="127" Count="2" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="24" Count="19" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="98" Count="7" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="11" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
